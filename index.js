@@ -1,28 +1,42 @@
-const secrets = require('./secrets');
+const fs = require('fs');
+const { prefix, KEY } = require('./secrets');
 const Discord = require('discord.js');
+
 const client = new Discord.Client();
 
+client.commands = new Discord.Collection();
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles){
+	const command = require(`./commands/${file}`);
+	client.commands.set(command.name, command);
+}
 
 function getRandint(max){
     return Math.floor(Math.random() * Math.floor(max));
 }
 
 client.once('ready', () => {
-    console.log('Ready!');
+    console.log('Good to go');
 });
+
 
 client.on('message', message => {
-    
-    if(message.content === '!coin'){
-	var outcome = getRandint(2);
-	if (outcome){
-	    message.channel.send("Heads! :smile:");
-	}else{
-	    message.channel.send("Tails! :grin:");
-	}
+    if(!message.content.startsWith(prefix) || message.author.bot) return;
+
+    const args = message.content.slice(prefix.length).split(/ +/);
+    const command = args.shift().toLowerCase();
+
+    if (!client.commands.has(command)) return;
+
+    try{
+    	client.commands.get(command).execute(message, args);
     }
+    catch (error){
+    	console.error(error);
+	message.reply('There was an error trying to execute that command.');
+    }
+
 });
-
-
 
 client.login(KEY);
