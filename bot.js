@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { prefix, KEY } = require('./secrets');
+const { prefix, KEY } = require('./secrets.js');
 const Discord = require('discord.js');
 
 const client = new Discord.Client();
@@ -12,9 +12,6 @@ for (const file of commandFiles){
 	client.commands.set(command.name, command);
 }
 
-function getRandint(max){
-    return Math.floor(Math.random() * Math.floor(max));
-}
 
 client.once('ready', () => {
     console.log('Good to go');
@@ -22,6 +19,7 @@ client.once('ready', () => {
 
 
 client.on('message', message => {
+    //check to see if the message is a command
     if(!message.content.startsWith(prefix) || message.author.bot) return;
 
     const args = message.content.slice(prefix.length).split(/ +/);
